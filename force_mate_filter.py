@@ -2,15 +2,15 @@ import chess
 import chess.pgn
 import chess.engine
 
-ENGINE_PATH = r"" #вписать путь к движку
-INPUT_PGN = r"" #вписать путь к анализируемому файлу
+ENGINE_PATH = r"" #указать путь к движку
+INPUT_PGN = r"" #указать путь к анализируемому файлу
 OUTPUT_PGN = "mates_found.pgn"
 
 MATE_IN = 2
 DEPTH = 12
 
 
-def cut_on_forced_mate(game, engine, mate_in=2, depth=12):
+def cut_on_forced_mate(game, engine, mate_in=2, depth=10):
     results = []
     board = game.board()
     move_stack = []
@@ -24,10 +24,10 @@ def cut_on_forced_mate(game, engine, mate_in=2, depth=12):
         for candidate in board.legal_moves:
             board.push(candidate)
             info = engine.analyse(board, chess.engine.Limit(depth=depth))
-            score = info["score"].pov(chess.WHITE)
+            score = info["score"].pov(board.turn)
             board.pop()
 
-            if score.is_mate() and abs(score.mate()) == mate_in:
+            if score.is_mate() and score.mate() == mate_in:
                 print(f"Найден форсированный мат после хода {candidate.uci()}")
 
                 short_game = chess.pgn.Game()
@@ -71,7 +71,7 @@ def filter_pgn_mates(input_pgn, output_pgn, mate_in=2, depth=12):
 
             for cut in cuts:
                 found_count += 1
-                print("→ Сохраняем найденную позицию в файл")
+                print("Сохраняем найденную позицию в файл")
                 print(cut, file=outfile)
 
     engine.quit()
